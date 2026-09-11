@@ -72,14 +72,6 @@ export function ErrorState({ problem, onRetry }: { problem: CameraProblem; onRet
   return <div className="error-note">{cameraProblem ? <CameraOff /> : <ScanFace />}<h2>{copy[0]}</h2><p>{copy[1]}</p><Button variant="scrap" size="lg" onClick={onRetry}><RefreshCw /> TRY AGAIN</Button></div>;
 }
 
-function captureFrame(video: HTMLVideoElement | null): Promise<Blob | undefined> {
-  if (!video || video.videoWidth === 0) return Promise.resolve(undefined);
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  canvas.getContext("2d")?.drawImage(video, 0, 0);
-  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob ?? undefined), "image/jpeg", 0.82));
-}
-
 export function DetectionMachine() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -191,8 +183,10 @@ export function DetectionMachine() {
 
       socket.onerror = () => {
         if (session !== sessionRef.current || completed) return;
+        setBackendStatus("Couldn’t connect to the nod engine.");
         setProblem("backend");
         setPhase("error");
+        stopCamera();
       };
       socket.onclose = () => {
         if (session !== sessionRef.current || completed) return;
