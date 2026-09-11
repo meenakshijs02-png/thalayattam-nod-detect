@@ -29,7 +29,7 @@ async function mockPrediction(): Promise<Prediction> {
 }
 
 export async function predictGesture(frame?: Blob): Promise<Prediction> {
-  const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+  const apiUrl = import.meta.env["VITE_API_URL"] as string | undefined;
   if (!apiUrl) return mockPrediction();
 
   if (!frame) throw new Error("NO_FACE");
