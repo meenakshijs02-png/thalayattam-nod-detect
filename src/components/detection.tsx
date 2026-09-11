@@ -26,7 +26,7 @@ export function CameraView({ active, videoRef }: { active: boolean; videoRef: Re
   );
 }
 
-export function DetectionStatus({ phase, backendStatus }: { phase: DetectionPhase; backendStatus?: string }) {
+export function DetectionStatus({ phase, backendStatus }: { phase: DetectionPhase; backendStatus: string | undefined }) {
   const content = {
     waiting: ["READY?", "Position your face inside the frame."],
     detecting: ["LOOKING FOR A NOD...", "Keep your head in the little box."],
