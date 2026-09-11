@@ -26,7 +26,7 @@ export function CameraView({ active, videoRef }: { active: boolean; videoRef: Re
   );
 }
 
-export function DetectionStatus({ phase, backendStatus }: { phase: DetectionPhase; backendStatus: string | undefined }) {
+export function DetectionStatus({ phase, backendStatus }: { phase: DetectionPhase; backendStatus?: string }) {
   const content = {
     waiting: ["READY?", "Position your face inside the frame."],
     detecting: ["LOOKING FOR A NOD...", "Keep your head in the little box."],
@@ -70,6 +70,14 @@ export function ErrorState({ problem, onRetry }: { problem: CameraProblem; onRet
       ? ["AI is taking a tea break. ☕", "We couldn’t reach the Thalayattam engine."]
       : ["Oops. We can’t see you. 👀", problem === "missing" ? "We couldn’t find a camera on this device." : "Please allow camera access to use Thalayattam."];
   return <div className="error-note">{cameraProblem ? <CameraOff /> : <ScanFace />}<h2>{copy[0]}</h2><p>{copy[1]}</p><Button variant="scrap" size="lg" onClick={onRetry}><RefreshCw /> TRY AGAIN</Button></div>;
+}
+
+function captureFrame(video: HTMLVideoElement | null): Promise<Blob | undefined> {
+  if (!video || video.videoWidth === 0) return Promise.resolve(undefined);
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext("2d")?.drawImage(video, 0, 0);
+  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob ?? undefined), "image/jpeg", 0.82));
 }
 
 export function DetectionMachine() {
@@ -183,10 +191,8 @@ export function DetectionMachine() {
 
       socket.onerror = () => {
         if (session !== sessionRef.current || completed) return;
-        setBackendStatus("Couldn’t connect to the nod engine.");
         setProblem("backend");
         setPhase("error");
-        stopCamera();
       };
       socket.onclose = () => {
         if (session !== sessionRef.current || completed) return;
